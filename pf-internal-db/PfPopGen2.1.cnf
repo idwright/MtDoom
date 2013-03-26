@@ -1,0 +1,24 @@
+{
+	"SourceFileFormat":"VCF",
+
+	"FilterPassedOnly":false,
+	"PositiveQualityOnly":false,
+	
+	"LimitCount":-1,
+
+	"InfoComps":[
+		{"Name":"Reference base","ID":"RefBase", "Source":"REF",
+			"Display":false,
+			"Encoder": {"ID": "FixedString", "Len": 1 } },
+		{"Name":"Alternative base","ID":"AltBase", "Source":"ALT",
+			"Display":false,
+			"Encoder": {"ID": "FixedString", "Len": 1 } }
+	],
+
+	"SampleComps":[
+		{"ID":"covA",  "SourceID":"AD","SourceSub":0},
+		{"ID":"covD",  "SourceID":"AD","SourceSub":1}
+	]
+
+}
+
