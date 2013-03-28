@@ -15,6 +15,7 @@ cp -pr ${DIR}/Bitmaps ${Iteration}
 cp -pr ${DIR}/scripts ${Iteration}
 cp -pr ${DIR}/Doc ${Iteration}
 mv ${Iteration}/scripts/Local.example ${Iteration}/scripts/Local
+sed -e 's/\(googleAnalyticsId="\)\(\S*\)/\1${analytics_id}";/' -e 's/\(localhost=\)\(\w*\)/\1false/' ${Iteration}/scripts/Local/_SetAnalyticsId.js
 sed -i -e 's#/sandbox/keposeda/app#/DQXServer/app#' ${Iteration}/scripts/Local/_SetServerUrl.js
 sed -i -e "s/\(theMetaData1\.database = '\)[a-z0-9]*/\1${DATABASE}/" ${Iteration}/scripts/MetaData1.js
 cp ${DIR}/PfPopGen.* ${Iteration}
