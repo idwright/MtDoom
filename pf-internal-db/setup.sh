@@ -4,4 +4,4 @@ apt-get install python-pip
 apt-get install libmysqlclient-dev
 apt-get install python-dev
 apt-get install unzip
-
+pip install distribute --upgrade
