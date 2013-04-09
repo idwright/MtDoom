@@ -27,12 +27,13 @@ sh run.sh > ${RUN_DIR}/alfresco_file_versions.txt
 python load_samples.py
 mysql -u ${DBUSER} -p${DBPASS} ${DB} < sql/merge_sample_contexts.sql
 )
+sleep 10
 #Nasty hack as doesn't work the same way in and out
 (cd ganesha/ganesha-app/apps/ganesha
 sed -i.bak 's/#contact_person = F/contact_person = F/' api.py
 )
 #Allow time for reloading
-sleep 5
+sleep 10
 (cd PfPopGenWeb
 export PYTHONPATH=$PWD
 shovel db.create
@@ -60,6 +61,7 @@ mysql --local-infile=1 -u ${APP_DB_USER} -p${APP_DB_PASS} ${APP_DB} < pfannotrel
 #kill ${SERVER_PID}
 echo "Stop the server"
 read
+exit
 #This takes about 1 hr per track
 (cd DQXServer
 sed -i.bak -e 's/^srcFile=/#srcFile=/'  -e 's/^sys.argv=/#sys.argv=/'  -e 's/^sourcedir=/#sourcedir=/' _CreateDataVCF.py
