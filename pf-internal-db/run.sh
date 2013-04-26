@@ -2,8 +2,9 @@
 IMPORT_DIR=PfPopGenWeb/ExternalResources/ImportScripts/
 RUN_DIR=${PWD}
 export RUN_DIR
-. ./config.sh
-cp config.sh alfresco.cfg ganesha/data
+. ./config_db.sh
+cp config_db.sh ganesha/data/config.sh
+cp alfresco.cfg ganesha/data/
 #Required for shovel
 sed -i.bak -e "s#\(BASEDIR\)\(\s=\s'\)\(\S*\)'#\1\2${BASEDIR}'#" -e "s#\(DBUSER\)\(\s=\s'\)\(\S*\)'#\1\2${APP_DB_USER}'#" -e "s#\(DBPASS\)\(\s=\s'\)\(\S*\)'#\1\2${APP_DB_PASS}'#" -e "s#\(DB\)\(\s=\s'\)\(\S*\)'#\1\2${APP_DB}'#"  -e "s#\(DBSRV\)\(\s=\s'\)\(\S*\)'#\1\2${APP_DB_HOST}'#" PfPopGenWeb/config.py
 sed -i.bak -e "s#\('USER':\)\(\s*'\)\(\S*\)'#\1\2${DBUSER}'#" -e "s#\('PASSWORD':\)\(\s*'\)\(\S*\)'#\1\2${DBPASS}'#" -e "s#\('NAME':\)\(\s*'\)\(\S*\)'#\1\2${DB}'#" ganesha/ganesha-app/settings/common.py
@@ -11,39 +12,43 @@ sed -i.bak -e "s#\('USER':\)\(\s*'\)\(\S*\)'#\1\2${DBUSER}'#" -e "s#\('PASSWORD'
 #Do this now so you're paying attention
 (cd PfPopGenWeb
 export PYTHONPATH=$PWD
-shovel db.delete
+#shovel db.delete
 )
 (cd ganesha/ganesha-app
-python manage.py syncdb --settings=settings.development
+#python manage.py syncdb --settings=settings.development
 )
 (cd PfPopGenWeb
 export PYTHONPATH=$PWD
 )
-echo "Start the server start_server.sh"
-read
+#echo "Start the server start_server.sh"
+#read
 (cd ganesha/data
 export PYTHONPATH=$PWD:../ganesha-app/apps/
+echo "DROP SCHEMA ${DB};" | mysql -u ${DBUSER} -p${DBPASS} 
+echo "CREATE SCHEMA ${DB};" | mysql -u ${DBUSER} -p${DBPASS} 
 sh run.sh > ${RUN_DIR}/alfresco_file_versions.txt
-python load_samples.py
-mysql -u ${DBUSER} -p${DBPASS} ${DB} < sql/merge_sample_contexts.sql
+#python load_samples.py
+#mysql -u ${DBUSER} -p${DBPASS} ${DB} < sql/merge_sample_contexts.sql
 )
-sleep 10
+#sleep 10
 #Nasty hack as doesn't work the same way in and out
 (cd ganesha/ganesha-app/apps/ganesha
-sed -i.bak 's/#contact_person = F/contact_person = F/' api.py
+#sed -i.bak 's/#contact_person = F/contact_person = F/' api.py
 )
 #Allow time for reloading
-sleep 10
+#sleep 10
 (cd PfPopGenWeb
 export PYTHONPATH=$PWD
-shovel db.create
-shovel db.import_from_api http://127.0.0.1:8000/api/v1/
+#shovel db.create
+#shovel db.import_from_api http://127.0.0.1:8000/api/v1/
 cd ExternalResources/ImportScripts
+echo "DROP SCHEMA ${APP_DB};" | mysql -u ${APP_DB_USER} -p${APP_DB_PASS} 
+echo "CREATE SCHEMA ${APP_DB};" | mysql -u ${APP_DB_USER} -p${APP_DB_PASS}  
 mysql -u ${APP_DB_USER} -p${APP_DB_PASS} ${APP_DB} < loadPopulationData.sql
 )
 #Put back the original
 (cd ganesha/ganesha-app/apps/ganesha
-mv api.py.bak api.py
+#mv api.py.bak api.py
 )
 #Replaced with command line args below
 #sed -i.bak -e "s#\(ifilename='\)\(\S*\)'#\1../../../ganesha/data/Data/Genome\ annotation\ data/TandemRepeats.dat'#" -e "s#\(ofilename='\)\(\S*\)'#\1tandem.txt'#" ${IMPORT_DIR}/ConvertTandemRepeats.py
@@ -59,8 +64,16 @@ mysql --local-infile=1 -u ${APP_DB_USER} -p${APP_DB_PASS} ${APP_DB} < pfannotrel
 
 )
 #kill ${SERVER_PID}
-echo "Stop the server"
-read
+#echo "Stop the server"
+#read
+exit
+(cd /mnt/vcfdata/working/SNP-PfPopGen2.1/PfPopGen2.1
+TARGET_DIR=/mnt/vcfdata/processed/SNP-PfPopGen2.1/PfPopGen2.1
+cp /mnt/storage/scripts/ganesha/data/Data/public_samples.txt .
+rm -rf ${TARGET_DIR}
+test -d ${TARGET_DIR} || mkdir -p ${TARGET_DIR}
+python /mnt/storage/scripts/PfPopGenWeb/ExternalResources/ImportScripts/CopyPublicSampeGenotypeData.py ${TARGET_DIR}
+)
 exit
 #This takes about 1 hr per track
 (cd DQXServer
